@@ -91,7 +91,7 @@ def main():
     list_paths = create_filepaths(path_base)
     for filepath in list_paths:
         print(tag_entities(filepath))
-    # TESTESTEST
+    # TESTETSTESTESTST
 
 
 main()

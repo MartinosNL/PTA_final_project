@@ -40,12 +40,13 @@ def tag_entities(filepath):
             tuple_current = (current_split[3], current_split[4])
             list_pos.append(tuple_current)
     ne_tags = ne_chunk(list_pos)
-    
+
     # Clean up NER tags.
     list_tags = []
     for ne in ne_tags:
         if hasattr(ne, 'label'):
-            for i in range(len(ne)): # We do this to handle multi-word entities.
+            # We do this to handle multi-word entities.
+            for i in range(len(ne)):
                 list_tags.append(ne.label())
         else:
             list_tags.append(None)
@@ -64,6 +65,7 @@ def tag_entities(filepath):
             list_tagged.append(line)
             accum_line += 1
     return "\n".join(list_tagged)
+
 
 def create_filepaths(path_input):
     '''Returns a list of filepaths leading to "en.tok.off.pos" files.'''
@@ -89,6 +91,7 @@ def main():
     list_paths = create_filepaths(path_base)
     for filepath in list_paths:
         print(tag_entities(filepath))
+    # TESTESTEST
 
 
 main()

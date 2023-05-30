@@ -2,7 +2,29 @@ import pathlib
 import sys
 from collections import Counter
 from nltk import ne_chunk
-import spacy
+# import spacy
+import wikipediaapi
+
+
+def add_urls(tagged_file):
+    '''using: https://github.com/martin-majlis/Wikipedia-API/'''
+
+    added_urls = ""
+    for line in tagged_file.split("\n"):
+        current_split = line.split(" ")
+        # check if word is tagged with an entity
+        if len(current_split) == 6:
+            # Takes the entity and checks if this entity has a wikipedia page
+            wiki_wiki = wikipediaapi.Wikipedia('en')
+            page_py = wiki_wiki.page(current_split[3])
+            if page_py.exists() == True:
+                # Takes the found wikipedia page, sets it to a URL and adds
+                # this to the line
+                url = page_py.fullurl
+                line += " " + url
+        added_urls += line + "\n"
+    return added_urls
+    # TODO: The wikipediafinder does not look at words crossing over lines (Burkina Faso) or looks at the tagged entity yet
 
 
 def gpe_disambig(string):
@@ -65,6 +87,7 @@ def tag_entities(filepath):
             accum_line += 1
     return "\n".join(list_tagged)
 
+
 def create_filepaths(path_input):
     '''Returns a list of filepaths leading to "en.tok.off.pos" files.'''
     list_append = []
@@ -88,7 +111,9 @@ def main():
     path_base = pathlib.Path(sys.argv[1])
     list_paths = create_filepaths(path_base)
     for filepath in list_paths:
-        print(tag_entities(filepath))
+        tagged_entities = (tag_entities(filepath))
+        urled_entities = add_urls(tagged_entities)
+    # TODO: write docstrings for all functions :)
 
 
 main()

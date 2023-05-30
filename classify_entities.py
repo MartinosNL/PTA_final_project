@@ -5,8 +5,7 @@ from nltk import ne_chunk
 import spacy
 
 
-def tag_entities(filepath):
-    NER = spacy.load("en_core_web_sm")
+def tag_entities(filepath, NER):
     # Open file and put contents in string.
     str_file_contents = ""
     with open(filepath, 'r') as file_input:
@@ -14,14 +13,16 @@ def tag_entities(filepath):
             str_file_contents += line
 
     # Create NER tags.
+    dict_ner = {}
     list_sent = []
     for line in str_file_contents.split("\n"):
         current_split = line.split(" ")
         if len(current_split) >= 4:
             list_sent.append(current_split[3])
     current_sent = " ".join(list_sent)
-    for word in NER(current_sent).ents:
-        print(word, word.label_)
+    # Stopping here for now. TODO: Adhere to the tags demanded
+    # by the assignment and format the NEs in a way appendable in the code
+    # underneath here.
 
     # Add tag to lines in string where applicable.
     list_tagged = []
@@ -55,10 +56,11 @@ def create_filepaths(path_input):
 
 
 def main():
+    NER = spacy.load("en_core_web_sm")
     path_base = pathlib.Path(sys.argv[1])
     list_paths = create_filepaths(path_base)
-    #for filepath in list_paths:
-    tag_entities(list_paths[0])
+    for filepath in list_paths:
+        tag_entities(filepath, NER)
 
 
 main()

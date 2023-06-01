@@ -2,8 +2,11 @@ import pathlib
 import sys
 from collections import Counter
 from nltk import ne_chunk
+from nltk.corpus import wordnet
 # import spacy
 import wikipediaapi
+import warnings
+import locationtagger
 
 
 def add_urls(tagged_file):
@@ -28,26 +31,58 @@ def add_urls(tagged_file):
 
 
 def gpe_disambig(string):
-    '''This will handle the separation between COU and CIT.'''
-    return "dummy"
+    '''This function uses locationtagger to disambiguate between CIT and COU.'''
+    place_entity = locationtagger.find_locations(text = string)
+    if place_entity.countries != []:
+        return "COU"
+    if place_entity.cities != []:
+        return "CIT"
+    if place_entity.regions != []:
+        return "COU"
+    if string == "St.":
+        return "CIT"
+    elif string == "Los":
+        return "CIT"
+    elif string == "U.S.":
+        return "COU"
+    return None
 
 
-def fit_ner(string):
-    '''This will handle turning the chunk labels into the desired labels.'''
-    if string == "PERSON":
+def fit_ner(tag, word):
+    '''This handles turning the ne_chunk labels into the desired labels.'''
+    if tag == "PERSON":
         return "PER"
-    elif string == "ORGANIZATION":
+    elif tag == "ORGANIZATION":
         return "ORG"
-    elif string == "GPE" or string == "GSP":
-        return gpe_disambig(string)
+    elif tag == "GPE" or tag == "GSP":
+        return gpe_disambig(word)
     else:
         return None
-    # TODO: No idea how to find animals, sports, nature and entertainment.
-    # Will do research into this but will likely have to be done with a separate
-    # tagging system through sysnet.
+
+
+def detect_other(string):
+    '''This function is able to recognise animals and sports thanks to synsets.'''
+    # Pre-process the input.
+    if wordnet.synsets(string) == []:
+        return None
+    current_synsets = wordnet.synsets(string)[0]
+    list_hypernyms = set([i for i in current_synsets.closure(lambda s:s.hypernyms())])
+
+    # Create the synsets for our categories.
+    synset_ani = wordnet.synset('animal.n.01')
+    synset_spo = wordnet.synset("sport.n.01")
+
+    # Check them.
+    if synset_ani in list_hypernyms:
+        return "ANI"
+    if synset_spo in list_hypernyms:
+        return "SPO"
+    return None
 
 
 def tag_entities(filepath):
+    '''Adds entity tags to the file in the filepath provided.
+    Returns the contents of the file as a string.'''
     # Open file and put contents in string.
     str_file_contents = ""
     with open(filepath, 'r') as file_input:
@@ -77,15 +112,21 @@ def tag_entities(filepath):
     accum_line = 0
     for line in str_file_contents.split("\n"):
         if line != "":
+            tag_other = detect_other(line.split(" ")[3])
             if list_tags[accum_line] != None:
-                made_tag = fit_ner(list_tags[accum_line])
+                made_tag = fit_ner(list_tags[accum_line], line.split(" ")[3])
                 if made_tag != None:
                     line += " "
                     line += made_tag
+            elif tag_other != None:
+                line += " "
+                line += tag_other
             # Sysnet functionality per word could be added here.
             list_tagged.append(line)
             accum_line += 1
     return "\n".join(list_tagged)
+    # TODO: Find a way to tag entertainment and nature, as neither synsets nor
+    # available NER can seemingly do so, at least from my testing.
 
 
 def create_filepaths(path_input):
@@ -108,10 +149,11 @@ def create_filepaths(path_input):
 
 
 def main():
+    warnings.filterwarnings("ignore") # Wordnet loves to throw warnings.
     path_base = pathlib.Path(sys.argv[1])
     list_paths = create_filepaths(path_base)
     for filepath in list_paths:
-        tagged_entities = (tag_entities(filepath))
+        tagged_entities = tag_entities(filepath)
         urled_entities = add_urls(tagged_entities)
     # TODO: write docstrings for all functions :)
 

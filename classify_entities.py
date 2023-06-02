@@ -3,7 +3,8 @@ import sys
 from collections import Counter
 from nltk import ne_chunk
 from nltk.corpus import wordnet
-# import spacy
+import spacy
+import en_core_web_sm
 import wikipediaapi
 import warnings
 import locationtagger
@@ -60,7 +61,7 @@ def fit_ner(tag, word):
         return None
 
 
-def detect_other(string):
+def detect_other(string, tagged_by_spacy):
     '''This function is able to recognise animals and sports thanks to synsets.'''
     # Pre-process the input.
     if wordnet.synsets(string) == []:
@@ -77,18 +78,44 @@ def detect_other(string):
         return "ANI"
     if synset_spo in list_hypernyms:
         return "SPO"
+    
+    word_tag_list = [(X.text, X.label_) for X in tagged_by_spacy.ents]
+    for word_tag in word_tag_list:
+        if len(word_tag) == 2 and word_tag[1] == 'WORK_OF_ART': # or word_tag[1] == 'EVENT':
+            return 'ENT'
+        if len(word_tag) == 2 and word_tag[1] == 'LOC':
+            return 'NAT'
+            # print(word_tag, "TEST")
+        # if len(word_tag) == 2 and word_tag[1] == 'WORK_OF_ART': # or word_tag[1] == 'EVENT':
+        #     return 'ENT'
+            # print(word_tag, 'TEST')
     return None
 
 
-def tag_entities(filepath):
-    '''Adds entity tags to the file in the filepath provided.
-    Returns the contents of the file as a string.'''
-    # Open file and put contents in string.
+# def detect_ent_nat(tagged_by_spacy):
+#     # nlp = en_core_web_sm.load()
+#     # tagged_by_spacy = nlp(words)
+#     # print([(X.text, X.label_) for X in tagged_by_spacy.ents])
+#     word_tag_list = [(X.text, X.label_) for X in tagged_by_spacy.ents]
+#     print(word_tag_list)
+#     for word_tag in word_tag_list:
+#         if len(word_tag) == 2 and word_tag[1] == 'LOC':
+#             return 'NAT'
+#             # print(word_tag, "TEST")
+#         if len(word_tag) == 2 and word_tag[1] == 'WORK_OF_ART': # or word_tag[1] == 'EVENT':
+#             return 'ENT'
+#             # print(word_tag, 'TEST')
+#     return None
+
+
+def open_file(filepath):
     str_file_contents = ""
     with open(filepath, 'r') as file_input:
         for line in file_input:
             str_file_contents += line
+    return str_file_contents
 
+def create_ner_tags(str_file_contents):
     # Create NER tags.
     list_pos = []
     for line in str_file_contents.split("\n"):
@@ -106,18 +133,31 @@ def tag_entities(filepath):
                 list_tags.append(ne.label())
         else:
             list_tags.append(None)
+    return list_tags
 
-    # Add tag to lines in string where applicable.
+def get_words(str_file_contents):
+    str_content = ''
+    for line in str_file_contents.split("\n"):
+        if line != "":
+            str_content = str_content + ' ' + line.split(" ")[3]
+    return str_content
+
+def tagger(str_file_contents, list_tags, tagged_by_spacy):
+     # Add tag to lines in string where applicable.
     list_tagged = []
     accum_line = 0
     for line in str_file_contents.split("\n"):
         if line != "":
-            tag_other = detect_other(line.split(" ")[3])
+            tag_other = detect_other(line.split(" ")[3], tagged_by_spacy)
+            # print(line.split(" ")[3])
+            # detect_ent_nat(line.split(" ")[3])
             if list_tags[accum_line] != None:
                 made_tag = fit_ner(list_tags[accum_line], line.split(" ")[3])
-                if made_tag != None:
-                    line += " "
-                    line += made_tag
+                if list_tags[accum_line] != None:
+
+                    if made_tag != None:
+                        line += " "
+                        line += made_tag
             elif tag_other != None:
                 line += " "
                 line += tag_other
@@ -125,8 +165,56 @@ def tag_entities(filepath):
             list_tagged.append(line)
             accum_line += 1
     return "\n".join(list_tagged)
-    # TODO: Find a way to tag entertainment and nature, as neither synsets nor
-    # available NER can seemingly do so, at least from my testing.
+
+# def tag_entities(filepath):
+#     '''Adds entity tags to the file in the filepath provided.
+#     Returns the contents of the file as a string.'''
+#     # Open file and put contents in string.
+#     str_file_contents = ""
+#     with open(filepath, 'r') as file_input:
+#         for line in file_input:
+#             str_file_contents += line
+
+#     # Create NER tags.
+#     list_pos = []
+#     for line in str_file_contents.split("\n"):
+#         current_split = line.split(" ")
+#         if len(current_split) >= 4:
+#             tuple_current = (current_split[3], current_split[4])
+#             list_pos.append(tuple_current)
+#     ne_tags = ne_chunk(list_pos)
+    
+#     # Clean up NER tags.
+#     list_tags = []
+#     for ne in ne_tags:
+#         if hasattr(ne, 'label'):
+#             for i in range(len(ne)): # We do this to handle multi-word entities.
+#                 list_tags.append(ne.label())
+#         else:
+#             list_tags.append(None)
+
+#     # Add tag to lines in string where applicable.
+#     list_tagged = []
+#     accum_line = 0
+#     for line in str_file_contents.split("\n"):
+#         if line != "":
+#             tag_other = detect_other(line.split(" ")[3])
+#             # print(line.split(" ")[3])
+#             # detect_ent_nat(line.split(" ")[3])
+#             if list_tags[accum_line] != None:
+#                 made_tag = fit_ner(list_tags[accum_line], line.split(" ")[3])
+#                 if made_tag != None:
+#                     line += " "
+#                     line += made_tag
+#             elif tag_other != None:
+#                 line += " "
+#                 line += tag_other
+#             # Sysnet functionality per word could be added here.
+#             list_tagged.append(line)
+#             accum_line += 1
+#     return "\n".join(list_tagged)
+#     # TODO: Find a way to tag entertainment and nature, as neither synsets nor
+#     # available NER can seemingly do so, at least from my testing.
 
 
 def create_filepaths(path_input):
@@ -149,13 +237,22 @@ def create_filepaths(path_input):
 
 
 def main():
+    nlp = en_core_web_sm.load()
+    # tagged_by_spacy = nlp(words)
     warnings.filterwarnings("ignore") # Wordnet loves to throw warnings.
     path_base = pathlib.Path(sys.argv[1])
     list_paths = create_filepaths(path_base)
+    # for filepath in list_paths:
+    #     tagged_entities = tag_entities(filepath)
+    #     urled_entities = add_urls(tagged_entities)
+    # # TODO: write docstrings for all functions :)
     for filepath in list_paths:
-        tagged_entities = tag_entities(filepath)
-        urled_entities = add_urls(tagged_entities)
-    # TODO: write docstrings for all functions :)
+        str_file_contents = open_file(filepath)
+        words = get_words(str_file_contents)
+        tagged_by_spacy = nlp(words)
+        # detect_ent_nat(tagged_by_spacy)
+        list_tags = create_ner_tags(str_file_contents)
+        print(tagger(str_file_contents, list_tags, tagged_by_spacy))
 
 
 main()

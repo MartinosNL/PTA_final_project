@@ -222,6 +222,7 @@ def detect_other(string, tagged_by_spacy):
 
 
 def open_file(filepath):
+    ''''''
     str_file_contents = ""
     with open(filepath, 'r') as file_input:
         for line in file_input:
@@ -230,6 +231,7 @@ def open_file(filepath):
 
 
 def create_ner_tags(str_file_contents):
+    ''''''
     # Create NER tags.
     list_pos = []
     for line in str_file_contents.split("\n"):
@@ -252,6 +254,7 @@ def create_ner_tags(str_file_contents):
 
 
 def get_words(str_file_contents):
+    ''''''
     str_content = ''
     for line in str_file_contents.split("\n"):
         if line != "":
@@ -260,6 +263,7 @@ def get_words(str_file_contents):
 
 
 def tagger(str_file_contents, list_tags, tagged_by_spacy):
+    ''''''
     # Add tag to lines in string where applicable.
     list_tagged = []
     accum_line = 0
@@ -303,6 +307,13 @@ def create_filepaths(path_input):
     return list_return
 
 
+def add_to_file(filename, content):
+    '''Adds the processed files to a new file, ending on .ent'''
+    ent_filename = filename + ".ent"
+    with open(ent_filename, "w") as ent_file:
+        ent_file.write(content)
+
+
 def main():
     nlp = en_core_web_sm.load()
     warnings.filterwarnings("ignore")  # Wordnet loves to throw warnings.
@@ -315,6 +326,8 @@ def main():
         list_tags = create_ner_tags(str_file_contents)
         tagged_entities = tagger(str_file_contents, list_tags, tagged_by_spacy)
         urled_entities = add_urls(tagged_entities)
+        add_to_file(filepath, urled_entities)
 
 
-main()
+if __name__ == "__main__":
+    main()

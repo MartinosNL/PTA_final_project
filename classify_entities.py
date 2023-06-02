@@ -290,21 +290,21 @@ def tagger(str_file_contents, list_tags, tagged_by_spacy):
 
 def create_filepaths(path_input):
     '''Returns a list of filepaths leading to "en.tok.off.pos" files.'''
-    list_append = []
-    list_return = []
+    filename_list = []
+    pos_filenames = []
     for item in path_input.iterdir():
         path_subdir = ""
         if item.is_file() == False:
             path_subdir = pathlib.Path(item)
-            list_add = create_filepaths(path_subdir)
-            if list_add != []:
-                list_append += list_add
+            filepath = create_filepaths(path_subdir)
+            if filepath != []:
+                filename_list += filepath
         else:
-            list_append.append(item)
-    for item in list_append:
+            filename_list.append(item)
+    for item in filename_list:
         if str(item)[-3:] == "pos":
-            list_return.append(str(item))
-    return list_return
+            pos_filenames.append(str(item))
+    return pos_filenames
 
 
 def add_to_file(filename, content):

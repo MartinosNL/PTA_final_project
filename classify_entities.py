@@ -10,22 +10,52 @@ import locationtagger
 
 
 def add_urls(tagged_file):
-    '''using: https://github.com/martin-majlis/Wikipedia-API/'''
-
     added_urls = ""
-    for line in tagged_file.split("\n"):
-        current_split = line.split(" ")
-        # check if word is tagged with an entity
-        if len(current_split) == 6:
-            # Takes the entity and checks if this entity has a wikipedia page
-            wiki_wiki = wikipediaapi.Wikipedia('en')
-            page_py = wiki_wiki.page(current_split[3])
-            if page_py.exists() == True:
-                # Takes the found wikipedia page, sets it to a URL and adds
-                # this to the line
-                url = page_py.fullurl
-                line += " " + url
-        added_urls += line + "\n"
+    split_file = tagged_file.split("\n")
+
+    for i in range(len(split_file)):
+        current_split = split_file[i].split(" ")
+        # Check if line has Entity tag
+        if len(current_split) != 6:
+            added_urls += split_file[i] + "\n"
+            continue
+
+        check_ngrams = []
+        ngram = []
+        # Check for 1, 2 and 3-grams
+        for n in range(1, 4):
+            start_index = i - n
+            end_index = i + n + 1
+            if start_index >= 0 and end_index <= len(split_file):
+                ngram = []
+                if len(split_file[i - 2].split(" ")) >= 6 and len(split_file[i - 1].split(" ")) >= 6:
+                    ngram.append(split_file[i - 2].split(" ")[3])
+                if len(split_file[i - 1].split(" ")) >= 6:
+                    ngram.append(split_file[i - 1].split(" ")[3])
+                ngram.append(current_split[3])
+                if len(split_file[i + 1].split(" ")) == 6:
+                    ngram.append(split_file[i - 2].split(" ")[3])
+                if len(split_file[i + 1].split(" ")) == 6 and len(split_file[i+2].split(" ")) == 6:
+                    ngram.append(split_file[i - 1].split(" ")[3])
+                print(ngram)
+        check_ngrams.append(" ".join(ngram))
+
+
+
+        for check_ngram in check_ngrams:
+            # Check if the word is tagged with an entity
+            if check_ngram:
+                # Take the entity and check if it has a Wikipedia page
+                wiki_wiki = wikipediaapi.Wikipedia('en')
+                page_py = wiki_wiki.page(check_ngram)
+                if page_py.exists():
+                    # Take the found Wikipedia page, set it to a URL, and add it to the line
+                    url = page_py.fullurl
+                    split_file[i] += " " + url
+                    break
+
+        added_urls += split_file[i] + "\n"
+
     return added_urls
     # TODO: The wikipediafinder does not look at words crossing over lines (Burkina Faso) or looks at the tagged entity yet
 
@@ -155,6 +185,7 @@ def main():
     for filepath in list_paths:
         tagged_entities = tag_entities(filepath)
         urled_entities = add_urls(tagged_entities)
+        print(urled_entities)
     # TODO: write docstrings for all functions :)
 
 

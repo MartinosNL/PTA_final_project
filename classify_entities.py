@@ -12,7 +12,6 @@ import locationtagger
 def add_urls(tagged_file):
     added_urls = ""
     split_file = tagged_file.split("\n")
-
     for i in range(len(split_file)):
         current_split = split_file[i].split(" ")
         # Check if line has Entity tag
@@ -22,25 +21,123 @@ def add_urls(tagged_file):
 
         check_ngrams = []
         ngram = []
-        # Check for 1, 2 and 3-grams
-        for n in range(1, 4):
-            start_index = i - n
-            end_index = i + n + 1
-            if start_index >= 0 and end_index <= len(split_file):
+        # Check for 1, 2, 3 and 4-grams
+        for n in range(1, 5):
+            if n == 1:
+                start_index = i - 3
+                end_index = i + 3
+                if start_index >= 0 and end_index <= len(split_file):
+                    # 4-grams
+                    ngram = []
+                    if len(split_file[i - 3].split(" ")) >= 6\
+                    and len(split_file[i - 2].split(" ")) >= 6\
+                    and len(split_file[i - 1].split(" ")) >= 6:
+                        ngram.append(split_file[i - 3].split(" ")[3])
+                    if len(split_file[i - 2].split(" ")) >= 6\
+                    and len(split_file[i - 1].split(" ")) >= 6:
+                        ngram.append(split_file[i - 2].split(" ")[3])
+                    if len(split_file[i - 1].split(" ")) >= 6:
+                        ngram.append(split_file[i - 1].split(" ")[3])
+                    ngram.append(current_split[3])
+                    if len(ngram) == 4:
+                        check_ngrams.append(" ".join(ngram))
+
+                    ngram = []
+                    if len(split_file[i - 2].split(" ")) >= 6\
+                    and len(split_file[i - 1].split(" ")) >= 6:
+                        ngram.append(split_file[i - 2].split(" ")[3])
+                    if len(split_file[i - 1].split(" ")) >= 6:
+                        ngram.append(split_file[i - 1].split(" ")[3])
+                    ngram.append(current_split[3])
+                    if len(split_file[i + 1].split(" ")) >= 6:
+                        ngram.append(split_file[i + 1])
+                    if len(ngram) == 4:
+                        check_ngrams.append(" ".join(ngram))
+
+                    ngram = []
+                    if len(split_file[i - 1].split(" ")) >= 6:
+                        ngram.append(split_file[i - 1].split(" ")[3])
+                    ngram.append(current_split[3])
+                    if len(split_file[i + 1].split(" ")) >= 6:
+                        ngram.append(split_file[i + 1].split(" ")[3])
+                    if len(split_file[i + 2].split(" ")) >= 6\
+                    and len(split_file[i + 1].split(" ")) >= 6:
+                        ngram.append(split_file[i + 2].split(" ")[3])
+                    if len(ngram) == 4:
+                        check_ngrams.append(" ".join(ngram))
+
+                    ngram = []
+                    ngram.append(current_split[3])
+                    if len(split_file[i + 1].split(" ")) >= 6:
+                        ngram.append(split_file[i + 1].split(" ")[3])
+                    if len(split_file[i + 2].split(" ")) >= 6\
+                    and len(split_file[i + 1].split(" ")) >= 6:
+                        ngram.append(split_file[i + 2].split(" ")[3])
+                    if len(split_file[i + 1].split(" ")) >= 6\
+                    and len(split_file[i + 2].split(" ")) >= 6\
+                    and len(split_file[i + 3].split(" ")) >= 6:
+                        ngram.append(split_file[i + 3].split(" ")[3])
+                    if len(ngram) == 4:
+                        check_ngrams.append(" ".join(ngram))
+
+            if n == 2:
+                start_index = i - 2
+                end_index = i + 2
+                if start_index >= 0 and end_index <= len(split_file):
+                    # 3-grams
+                    ngram = []
+                    if len(split_file[i - 2].split(" ")) >= 6\
+                       and len(split_file[i - 1].split(" ")) >= 6:
+                        ngram.append(split_file[i - 2].split(" ")[3])
+                    if len(split_file[i - 1].split(" ")) >= 6:
+                        ngram.append(split_file[i - 1].split(" ")[3])
+                    ngram.append(current_split[3])
+                    if len(ngram) == 3:
+                        check_ngrams.append(" ".join(ngram))
+
+                    ngram = []
+                    if len(split_file[i - 1].split(" ")) >= 6:
+                        ngram.append(split_file[i - 1].split(" ")[3])
+                    ngram.append(current_split[3])
+                    if len(split_file[i + 1].split(" ")) == 6:
+                        ngram.append(split_file[i + 1].split(" ")[3])
+                    if len(ngram) == 3:
+                        check_ngrams.append(" ".join(ngram))
+
+                    ngram = []
+                    ngram.append(current_split[3])
+                    if len(split_file[i + 1].split(" ")) == 6:
+                        ngram.append(split_file[i + 1].split(" ")[3])
+                    if len(split_file[i + 1].split(" ")) == 6\
+                       and len(split_file[i+2].split(" ")) == 6:
+                        ngram.append(split_file[i + 2].split(" ")[3])
+                    if len(ngram) == 3:
+                        check_ngrams.append(" ".join(ngram))
+
+            if n == 3:
+                start_index = i - 1
+                end_index = i + 1
+                if start_index >= 0 and end_index <= len(split_file):
+                    # 2-grams
+                    ngram = []
+                    if len(split_file[i - 1].split(" ")) >= 6:
+                        ngram.append(split_file[i - 1].split(" ")[3])
+                    ngram.append(current_split[3])
+                    if len(ngram) == 2:
+                        check_ngrams.append(" ".join(ngram))
+
+                    ngram = []
+                    ngram.append(current_split[3])
+                    if len(split_file[i + 1].split(" ")) == 6:
+                        ngram.append(split_file[i + 1].split(" ")[3])
+                    if len(ngram) == 2:
+                        check_ngrams.append(" ".join(ngram))
+
+            if n == 4:
+                # 1-gram
                 ngram = []
-                if len(split_file[i - 2].split(" ")) >= 6 and len(split_file[i - 1].split(" ")) >= 6:
-                    ngram.append(split_file[i - 2].split(" ")[3])
-                if len(split_file[i - 1].split(" ")) >= 6:
-                    ngram.append(split_file[i - 1].split(" ")[3])
                 ngram.append(current_split[3])
-                if len(split_file[i + 1].split(" ")) == 6:
-                    ngram.append(split_file[i - 2].split(" ")[3])
-                if len(split_file[i + 1].split(" ")) == 6 and len(split_file[i+2].split(" ")) == 6:
-                    ngram.append(split_file[i - 1].split(" ")[3])
-                print(ngram)
-        check_ngrams.append(" ".join(ngram))
-
-
+                check_ngrams.append(" ".join(ngram))
 
         for check_ngram in check_ngrams:
             # Check if the word is tagged with an entity
@@ -49,7 +146,8 @@ def add_urls(tagged_file):
                 wiki_wiki = wikipediaapi.Wikipedia('en')
                 page_py = wiki_wiki.page(check_ngram)
                 if page_py.exists():
-                    # Take the found Wikipedia page, set it to a URL, and add it to the line
+                    # Take the found Wikipedia page, set it to a URL,
+                    # and add it to the line
                     url = page_py.fullurl
                     split_file[i] += " " + url
                     break
@@ -57,11 +155,10 @@ def add_urls(tagged_file):
         added_urls += split_file[i] + "\n"
 
     return added_urls
-    # TODO: The wikipediafinder does not look at words crossing over lines (Burkina Faso) or looks at the tagged entity yet
 
 
 def gpe_disambig(string):
-    '''This function uses locationtagger to disambiguate between CIT and COU.'''
+    '''This function uses locationtagger to disambiguate between CIT & COU.'''
     place_entity = locationtagger.find_locations(text = string)
     if place_entity.countries != []:
         return "COU"

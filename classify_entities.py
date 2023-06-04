@@ -257,6 +257,7 @@ def tagger(str_file_contents, list_tags, tagged_by_spacy):
     list_tagged = []
     accum_line = 0
     for line in str_file_contents.split("\n"):
+        line_tagged = False
         if line != "":
             tag_other = detect_other(line.split(" ")[3], tagged_by_spacy)
             if list_tags[accum_line] != None:
@@ -266,7 +267,8 @@ def tagger(str_file_contents, list_tags, tagged_by_spacy):
                     if made_tag != None:
                         line += " "
                         line += made_tag
-            elif tag_other != None:
+                        line_tagged = True
+            if tag_other != None and line_tagged == False:
                 line += " "
                 line += tag_other
             # Sysnet functionality per word could be added here.

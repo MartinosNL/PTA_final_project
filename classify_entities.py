@@ -3,6 +3,7 @@ import sys
 from collections import Counter
 from nltk import ne_chunk
 from nltk.corpus import wordnet
+from nltk.wsd import lesk
 import spacy
 import en_core_web_sm
 import wikipediaapi
@@ -11,6 +12,7 @@ import locationtagger
 
 
 def add_urls(tagged_file):
+    '''Adds URLS to tagged words'''
     added_urls = ""
     split_file = tagged_file.split("\n")
     for i in range(len(split_file)):

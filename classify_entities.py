@@ -271,15 +271,15 @@ def tagger(str_file_contents, list_tags, tagged_by_spacy):
         line_tagged = False
         if line != "":
             tag_other = detect_other(line.split(" ")[3], tagged_by_spacy)
-            if list_tags[accum_line] != None:
+            if list_tags[accum_line] is not None:
                 made_tag = fit_ner(list_tags[accum_line], line.split(" ")[3])
-                if list_tags[accum_line] != None:
+                if list_tags[accum_line] is not None:
 
-                    if made_tag != None:
+                    if made_tag is not None:
                         line += " "
                         line += made_tag
                         line_tagged = True
-            if tag_other != None and line_tagged == False:
+            if tag_other is not None and line_tagged is False:
                 line += " "
                 line += tag_other
             # Sysnet functionality per word could be added here.
@@ -294,7 +294,7 @@ def create_filepaths(path_input):
     pos_filenames = []
     for item in path_input.iterdir():
         path_subdir = ""
-        if item.is_file() == False:
+        if item.is_file() is False:
             path_subdir = pathlib.Path(item)
             filepath = create_filepaths(path_subdir)
             if filepath != []:

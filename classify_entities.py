@@ -29,7 +29,7 @@ def add_urls(tagged_file):
             if n == 1:
                 start_index = i - 3
                 end_index = i + 3
-                if start_index >= 0 and end_index <= len(split_file):
+                if start_index >= 0 and end_index < len(split_file):
                     # 4-grams
                     ngram = []
                     if len(split_file[i - 3].split(" ")) >= 6\
@@ -86,7 +86,7 @@ def add_urls(tagged_file):
             if n == 2:
                 start_index = i - 2
                 end_index = i + 2
-                if start_index >= 0 and end_index <= len(split_file):
+                if start_index >= 0 and end_index < len(split_file):
                     # 3-grams
                     ngram = []
                     if len(split_file[i - 2].split(" ")) >= 6\
@@ -120,7 +120,7 @@ def add_urls(tagged_file):
             if n == 3:
                 start_index = i - 1
                 end_index = i + 1
-                if start_index >= 0 and end_index <= len(split_file):
+                if start_index >= 0 and end_index < len(split_file):
                     # 2-grams
                     ngram = []
                     if len(split_file[i - 1].split(" ")) >= 6:
